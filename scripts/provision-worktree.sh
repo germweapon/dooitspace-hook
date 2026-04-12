@@ -3,11 +3,11 @@ set -euo pipefail
 
 base_cwd="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
-paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip}"
-paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
-paperclip_dir="$worktree_cwd/.paperclip"
-worktree_config_path="$paperclip_dir/config.json"
-worktree_env_path="$paperclip_dir/.env"
+hook_home="${PAPERCLIP_HOME:-$HOME/.hook}"
+hook_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
+hook_dir="$worktree_cwd/.hook"
+worktree_config_path="$hook_dir/config.json"
+worktree_env_path="$hook_dir/.env"
 worktree_name="${PAPERCLIP_WORKSPACE_BRANCH:-$(basename "$worktree_cwd")}"
 
 if [[ ! -d "$base_cwd" ]]; then
@@ -21,20 +21,20 @@ if [[ ! -d "$worktree_cwd" ]]; then
 fi
 
 source_config_path="${PAPERCLIP_CONFIG:-}"
-if [[ -z "$source_config_path" && ( -e "$base_cwd/.paperclip/config.json" || -L "$base_cwd/.paperclip/config.json" ) ]]; then
-  source_config_path="$base_cwd/.paperclip/config.json"
+if [[ -z "$source_config_path" && ( -e "$base_cwd/.hook/config.json" || -L "$base_cwd/.hook/config.json" ) ]]; then
+  source_config_path="$base_cwd/.hook/config.json"
 fi
 if [[ -z "$source_config_path" ]]; then
-  source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
+  source_config_path="$hook_home/instances/$hook_instance_id/config.json"
 fi
 source_env_path="$(dirname "$source_config_path")/.env"
 
-mkdir -p "$paperclip_dir"
+mkdir -p "$hook_dir"
 
-run_paperclipai_command() {
+run_hookai_command() {
   local command_args=("$@")
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclipai --help >/dev/null 2>&1; then
-    pnpm paperclipai "${command_args[@]}"
+  if command -v pnpm >/dev/null 2>&1 && pnpm hookai --help >/dev/null 2>&1; then
+    pnpm hookai "${command_args[@]}"
     return 0
   fi
 
@@ -45,8 +45,8 @@ run_paperclipai_command() {
     return 0
   fi
 
-  if command -v paperclipai >/dev/null 2>&1; then
-    paperclipai "${command_args[@]}"
+  if command -v hookai >/dev/null 2>&1; then
+    hookai "${command_args[@]}"
     return 0
   fi
 
@@ -54,7 +54,7 @@ run_paperclipai_command() {
 }
 
 run_isolated_worktree_init() {
-  run_paperclipai_command \
+  run_hookai_command \
     worktree \
     init \
     --force \
@@ -70,7 +70,7 @@ write_fallback_worktree_config() {
   WORKTREE_NAME="$worktree_name" \
   BASE_CWD="$base_cwd" \
   WORKTREE_CWD="$worktree_cwd" \
-  PAPERCLIP_DIR="$paperclip_dir" \
+  PAPERCLIP_DIR="$hook_dir" \
   SOURCE_CONFIG_PATH="$source_config_path" \
   SOURCE_ENV_PATH="$source_env_path" \
   PAPERCLIP_WORKTREES_DIR="${PAPERCLIP_WORKTREES_DIR:-}" \
@@ -183,14 +183,14 @@ function resolveRuntimeLikePath(value, configPath) {
 
 async function main() {
   const worktreeName = process.env.WORKTREE_NAME;
-  const paperclipDir = process.env.PAPERCLIP_DIR;
+  const hookDir = process.env.PAPERCLIP_DIR;
   const sourceConfigPath = process.env.SOURCE_CONFIG_PATH;
   const sourceEnvPath = process.env.SOURCE_ENV_PATH;
-  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.PAPERCLIP_WORKTREES_DIR) ?? "~/.paperclip-worktrees"));
+  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.PAPERCLIP_WORKTREES_DIR) ?? "~/.hook-worktrees"));
   const instanceId = sanitizeInstanceId(worktreeName);
   const instanceRoot = path.resolve(worktreeHome, "instances", instanceId);
-  const configPath = path.resolve(paperclipDir, "config.json");
-  const envPath = path.resolve(paperclipDir, ".env");
+  const configPath = path.resolve(hookDir, "config.json");
+  const envPath = path.resolve(hookDir, ".env");
 
   let sourceConfig = null;
   if (sourceConfigPath && fs.existsSync(sourceConfigPath)) {
@@ -255,7 +255,7 @@ async function main() {
         baseDir: path.resolve(instanceRoot, "data", "storage"),
       },
       s3: {
-        bucket: sourceConfig?.storage?.s3?.bucket ?? "paperclip",
+        bucket: sourceConfig?.storage?.s3?.bucket ?? "hook",
         region: sourceConfig?.storage?.s3?.region ?? "us-east-1",
         endpoint: sourceConfig?.storage?.s3?.endpoint,
         prefix: sourceConfig?.storage?.s3?.prefix ?? "",
@@ -319,9 +319,23 @@ EOF
 }
 
 if ! run_isolated_worktree_init; then
-  echo "paperclipai CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
+  echo "hookai CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
   write_fallback_worktree_config
 fi
+
+disable_seeded_routines() {
+  local company_id="${PAPERCLIP_COMPANY_ID:-}"
+  if [[ -z "$company_id" ]]; then
+    echo "PAPERCLIP_COMPANY_ID not set; skipping routine disable post-step." >&2
+    return 0
+  fi
+
+  if ! run_hookai_command routines disable-all --config "$worktree_config_path" --company-id "$company_id"; then
+    echo "hookai CLI not available in this workspace; skipping routine disable post-step." >&2
+  fi
+}
+
+disable_seeded_routines
 
 list_base_node_modules_paths() {
   cd "$base_cwd" &&
@@ -331,7 +345,7 @@ list_base_node_modules_paths() {
       -type d \
       -name node_modules \
       ! -path './.git/*' \
-      ! -path './.paperclip/*' \
+      ! -path './.hook/*' \
       | sed 's#^\./##'
 }
 if [[ -f "$worktree_cwd/package.json" && -f "$worktree_cwd/pnpm-lock.yaml" ]]; then
@@ -348,7 +362,7 @@ if [[ -f "$worktree_cwd/package.json" && -f "$worktree_cwd/pnpm-lock.yaml" ]]; t
   done < <(list_base_node_modules_paths)
 
   if [[ "$needs_install" -eq 1 ]]; then
-    backup_suffix=".paperclip-backup-${BASHPID:-$$}"
+    backup_suffix=".hook-backup-${BASHPID:-$$}"
     moved_symlink_paths=()
 
     while IFS= read -r relative_path; do

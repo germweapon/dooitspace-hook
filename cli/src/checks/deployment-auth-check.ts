@@ -1,8 +1,12 @@
-import { inferBindModeFromHost } from "@paperclipai/shared";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { HOOKConfig } from "../config/schema.js";
 import type { CheckResult } from "./index.js";
 
-export function deploymentAuthCheck(config: PaperclipConfig): CheckResult {
+function isLoopbackHost(host: string) {
+  const normalized = host.trim().toLowerCase();
+  return normalized === "127.0.0.1" || normalized === "localhost" || normalized === "::1";
+}
+
+export function deploymentAuthCheck(config: HOOKConfig): CheckResult {
   const mode = config.server.deploymentMode;
   const exposure = config.server.exposure;
   const auth = config.auth;
@@ -34,7 +38,7 @@ export function deploymentAuthCheck(config: PaperclipConfig): CheckResult {
       status: "fail",
       message: "authenticated mode requires BETTER_AUTH_SECRET (or PAPERCLIP_AGENT_JWT_SECRET)",
       canRepair: false,
-      repairHint: "Set BETTER_AUTH_SECRET before starting Paperclip",
+      repairHint: "Set BETTER_AUTH_SECRET before starting HOOK",
     };
   }
 

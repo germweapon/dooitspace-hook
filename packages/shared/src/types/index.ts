@@ -217,7 +217,7 @@ export type {
   PluginLauncherDeclaration,
   PluginMinimumHostVersion,
   PluginUiDeclaration,
-  PaperclipPluginManifestV1,
+  HOOKPluginManifestV1,
   PluginRecord,
   PluginStateRecord,
   PluginConfig,

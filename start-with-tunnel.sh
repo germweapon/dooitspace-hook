@@ -1,5 +1,5 @@
 #!/bin/bash
-# Paperclip + Cloudflare Named Tunnel 한 번에 시작
+# Dooitspace HOOK + Cloudflare Named Tunnel 한 번에 시작
 
 cd "$(dirname "$0")"
 
@@ -9,7 +9,7 @@ SERVER_LOG="$LOG_DIR/server.log"
 TUNNEL_LOG="$LOG_DIR/tunnel.log"
 : > "$TUNNEL_LOG"
 
-echo "🚀 Paperclip 서버 시작 중... (로그: $SERVER_LOG)"
+echo "🚀 HOOK 서버 시작 중... (로그: $SERVER_LOG)"
 pnpm dev > "$SERVER_LOG" 2>&1 &
 SERVER_PID=$!
 
@@ -24,7 +24,7 @@ sleep 3
 
 echo ""
 echo "════════════════════════════════════════════════════════"
-echo "✅ Paperclip 서버 + Named Tunnel 시작 완료"
+echo "✅ Dooitspace HOOK 서버 + Named Tunnel 시작 완료"
 echo ""
 echo "    🔗 https://hook.dooitspace.com"
 echo "    🔗 https://builder.dooitspace.com"

@@ -1,9 +1,9 @@
 import fs from "node:fs";
-import { paperclipConfigSchema, type PaperclipConfig } from "@paperclipai/shared";
-import { resolvePaperclipConfigPath } from "./paths.js";
+import { paperclipConfigSchema, type HOOKConfig } from "@paperclipai/shared";
+import { resolveHOOKConfigPath } from "./paths.js";
 
-export function readConfigFile(): PaperclipConfig | null {
-  const configPath = resolvePaperclipConfigPath();
+export function readConfigFile(): HOOKConfig | null {
+  const configPath = resolveHOOKConfigPath();
 
   if (!fs.existsSync(configPath)) return null;
 

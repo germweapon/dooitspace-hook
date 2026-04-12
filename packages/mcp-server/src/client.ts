@@ -1,6 +1,6 @@
-import type { PaperclipMcpConfig } from "./config.js";
+import type { HOOKMcpConfig } from "./config.js";
 
-export class PaperclipApiError extends Error {
+export class HOOKApiError extends Error {
   readonly status: number;
   readonly method: string;
   readonly path: string;
@@ -14,7 +14,7 @@ export class PaperclipApiError extends Error {
     message: string;
   }) {
     super(input.message);
-    this.name = "PaperclipApiError";
+    this.name = "HOOKApiError";
     this.status = input.status;
     this.method = input.method;
     this.path = input.path;
@@ -48,8 +48,8 @@ async function parseResponseBody(response: Response): Promise<unknown> {
   }
 }
 
-export class PaperclipApiClient {
-  constructor(private readonly config: PaperclipMcpConfig) {}
+export class HOOKApiClient {
+  constructor(private readonly config: HOOKMcpConfig) {}
 
   get defaults() {
     return {
@@ -89,7 +89,7 @@ export class PaperclipApiClient {
       headers["Content-Type"] = "application/json";
     }
     if ((options.includeRunId ?? isWriteMethod(method)) && this.config.runId) {
-      headers["X-Paperclip-Run-Id"] = this.config.runId;
+      headers["X-HOOK-Run-Id"] = this.config.runId;
     }
 
     const response = await fetch(url, {
@@ -100,7 +100,7 @@ export class PaperclipApiClient {
     const parsedBody = await parseResponseBody(response);
 
     if (!response.ok) {
-      throw new PaperclipApiError({
+      throw new HOOKApiError({
         status: response.status,
         method: method.toUpperCase(),
         path,

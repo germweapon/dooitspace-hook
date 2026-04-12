@@ -1,21 +1,21 @@
 import pc from "picocolors";
 
-const PAPERCLIP_ART = [
-  "██████╗  █████╗ ██████╗ ███████╗██████╗  ██████╗██╗     ██╗██████╗ ",
-  "██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║     ██║██╔══██╗",
-  "██████╔╝███████║██████╔╝█████╗  ██████╔╝██║     ██║     ██║██████╔╝",
-  "██╔═══╝ ██╔══██║██╔═══╝ ██╔══╝  ██╔══██╗██║     ██║     ██║██╔═══╝ ",
-  "██║     ██║  ██║██║     ███████╗██║  ██║╚██████╗███████╗██║██║     ",
-  "╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝╚═╝     ",
+const HOOK_ART = [
+  "██╗  ██╗ ██████╗  ██████╗ ██╗  ██╗",
+  "██║  ██║██╔═══██╗██╔═══██╗██║ ██╔╝",
+  "███████║██║   ██║██║   ██║█████╔╝ ",
+  "██╔══██║██║   ██║██║   ██║██╔═██╗ ",
+  "██║  ██║╚██████╔╝╚██████╔╝██║  ██╗",
+  "╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝",
 ] as const;
 
-const TAGLINE = "Open-source orchestration for zero-human companies";
+const TAGLINE = "Dooitspace HOOK — Agent Orchestration Platform";
 
-export function printPaperclipCliBanner(): void {
+export function printHookCliBanner(): void {
   const lines = [
     "",
-    ...PAPERCLIP_ART.map((line) => pc.cyan(line)),
-    pc.blue("  ───────────────────────────────────────────────────────"),
+    ...HOOK_ART.map((line) => pc.cyan(line)),
+    pc.blue("  ─────────────────────────────────────"),
     pc.bold(pc.white(`  ${TAGLINE}`)),
     "",
   ];

@@ -4,11 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { createHash, type Hash } from "node:crypto";
 import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
-import { ensurePaperclipSkillSymlink, type PaperclipSkillEntry } from "@paperclipai/adapter-utils/server-utils";
+import { ensureHOOKSkillSymlink, type HOOKSkillEntry } from "@paperclipai/adapter-utils/server-utils";
 
 const DEFAULT_PAPERCLIP_INSTANCE_ID = "default";
 
-type SkillEntry = PaperclipSkillEntry;
+type SkillEntry = HOOKSkillEntry;
 
 export interface ClaudePromptBundle {
   bundleKey: string;
@@ -147,7 +147,7 @@ export async function prepareClaudePromptBundle(input: {
   for (const entry of skills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      await ensurePaperclipSkillSymlink(entry.source, target);
+      await ensureHOOKSkillSymlink(entry.source, target);
     } catch (err) {
       await onLog(
         "stderr",

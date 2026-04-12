@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolvePaperclipConfigPath, resolvePaperclipEnvPath } from "./paths.js";
-import type { BindMode, DeploymentExposure, DeploymentMode } from "@paperclipai/shared";
+import { resolveHOOKConfigPath, resolveHOOKEnvPath } from "./paths.js";
+import type { DeploymentExposure, DeploymentMode } from "@paperclipai/shared";
 
 import { parse as parseEnvFileContents } from "dotenv";
 
@@ -102,8 +102,8 @@ export function printStartupBanner(opts: StartupBannerOptions): void {
   const baseUrl = `http://${baseHost}:${opts.listenPort}`;
   const apiUrl = `${baseUrl}/api`;
   const uiUrl = opts.uiMode === "none" ? "disabled" : baseUrl;
-  const configPath = resolvePaperclipConfigPath();
-  const envFilePath = resolvePaperclipEnvPath();
+  const configPath = resolveHOOKConfigPath();
+  const envFilePath = resolveHOOKEnvPath();
   const agentJwtSecret = resolveAgentJwtSecretStatus(envFilePath);
 
   const dbMode =
@@ -135,12 +135,13 @@ export function printStartupBanner(opts: StartupBannerOptions): void {
     : color("disabled", "yellow");
 
   const art = [
-    color("██████╗  █████╗ ██████╗ ███████╗██████╗  ██████╗██╗     ██╗██████╗ ", "cyan"),
-    color("██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║     ██║██╔══██╗", "cyan"),
-    color("██████╔╝███████║██████╔╝█████╗  ██████╔╝██║     ██║     ██║██████╔╝", "cyan"),
-    color("██╔═══╝ ██╔══██║██╔═══╝ ██╔══╝  ██╔══██╗██║     ██║     ██║██╔═══╝ ", "cyan"),
-    color("██║     ██║  ██║██║     ███████╗██║  ██║╚██████╗███████╗██║██║     ", "cyan"),
-    color("╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝╚═╝     ", "cyan"),
+    color("██╗  ██╗ ██████╗  ██████╗ ██╗  ██╗", "cyan"),
+    color("██║  ██║██╔═══██╗██╔═══██╗██║ ██╔╝", "cyan"),
+    color("███████║██║   ██║██║   ██║█████╔╝ ", "cyan"),
+    color("██╔══██║██║   ██║██║   ██║██╔═██╗ ", "cyan"),
+    color("██║  ██║╚██████╔╝╚██████╔╝██║  ██╗", "cyan"),
+    color("╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝", "cyan"),
+    color("  Dooitspace HOOK — Agent Orchestration", "blue"),
   ];
 
   const lines = [
