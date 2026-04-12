@@ -13,8 +13,12 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Allow Cloudflare quick tunnel hostnames so external access works
-    allowedHosts: [".trycloudflare.com"],
+    // Allow Cloudflare tunnel hostnames so external access works
+    allowedHosts: [".trycloudflare.com", ".dooitspace.com"],
+    hmr: {
+      // Disable HMR over tunnel (WebSocket fails through Cloudflare Tunnel)
+      ...(process.env.PAPERCLIP_TUNNEL === "true" ? { overlay: false, server: false } as any : {}),
+    },
     // WSL2 /mnt/ drives don't support inotify — fall back to polling so HMR works
     watch: process.cwd().startsWith("/mnt/") ? { usePolling: true, interval: 1000 } : undefined,
     proxy: {
