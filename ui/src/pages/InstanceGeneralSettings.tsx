@@ -9,6 +9,7 @@ import {
 } from "@paperclipai/shared";
 import { LogOut, SlidersHorizontal } from "lucide-react";
 import { authApi } from "@/api/auth";
+import { useNavigate } from "@/lib/router";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { Button } from "../components/ui/button";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -23,10 +24,12 @@ export function InstanceGeneralSettings() {
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
   const signOutMutation = useMutation({
     mutationFn: () => authApi.signOut(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
+      navigate("/auth", { replace: true });
     },
     onError: (error) => {
       setActionError(error instanceof Error ? error.message : "Failed to sign out.");
@@ -238,7 +241,7 @@ export function InstanceGeneralSettings() {
             <h2 className="text-sm font-semibold">AI feedback sharing</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
               Control whether thumbs up and thumbs down votes can send the voted AI output to
-              Paperclip Labs. Votes are always saved locally.
+              Dooitspace. 투표는 항상 로컬에 저장됩니다.
             </p>
             {FEEDBACK_TERMS_URL ? (
               <a
@@ -313,7 +316,7 @@ export function InstanceGeneralSettings() {
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Sign out</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Sign out of this Paperclip instance. You will be redirected to the login page.
+              이 인스턴스에서 로그아웃합니다. 로그인 페이지로 이동합니다.
             </p>
           </div>
           <Button

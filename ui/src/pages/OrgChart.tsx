@@ -34,28 +34,41 @@ interface LayoutNode {
 
 // ── Layout algorithm ────────────────────────────────────────────────────
 
-/** Compute the width each subtree needs. */
-function subtreeWidth(node: OrgNode): number {
+/** Compute the width each subtree needs.
+ *  depth=0: root nodes spread children horizontally.
+ *  depth>=1: team leads and below stack children vertically — no extra width. */
+function subtreeWidth(node: OrgNode, depth: number = 0): number {
   if (node.reports.length === 0) return CARD_W;
-  const childrenW = node.reports.reduce((sum, c) => sum + subtreeWidth(c), 0);
+  if (depth >= 1) return CARD_W;
+  const childrenW = node.reports.reduce((sum, c) => sum + subtreeWidth(c, depth + 1), 0);
   const gaps = (node.reports.length - 1) * GAP_X;
   return Math.max(CARD_W, childrenW + gaps);
 }
 
 /** Recursively assign x,y positions. */
-function layoutTree(node: OrgNode, x: number, y: number): LayoutNode {
-  const totalW = subtreeWidth(node);
+function layoutTree(node: OrgNode, x: number, y: number, depth: number = 0): LayoutNode {
+  const totalW = subtreeWidth(node, depth);
   const layoutChildren: LayoutNode[] = [];
 
   if (node.reports.length > 0) {
-    const childrenW = node.reports.reduce((sum, c) => sum + subtreeWidth(c), 0);
-    const gaps = (node.reports.length - 1) * GAP_X;
-    let cx = x + (totalW - childrenW - gaps) / 2;
+    if (depth >= 1) {
+      // Stack children vertically under team leads
+      let cy = y + CARD_H + GAP_Y;
+      for (const child of node.reports) {
+        layoutChildren.push(layoutTree(child, x, cy, depth + 1));
+        cy += CARD_H + GAP_Y;
+      }
+    } else {
+      // Spread children horizontally at root level
+      const childrenW = node.reports.reduce((sum, c) => sum + subtreeWidth(c, depth + 1), 0);
+      const gaps = (node.reports.length - 1) * GAP_X;
+      let cx = x + (totalW - childrenW - gaps) / 2;
 
-    for (const child of node.reports) {
-      const cw = subtreeWidth(child);
-      layoutChildren.push(layoutTree(child, cx, y + CARD_H + GAP_Y));
-      cx += cw + GAP_X;
+      for (const child of node.reports) {
+        const cw = subtreeWidth(child, depth + 1);
+        layoutChildren.push(layoutTree(child, cx, y + CARD_H + GAP_Y, depth + 1));
+        cx += cw + GAP_X;
+      }
     }
   }
 
@@ -74,19 +87,16 @@ function layoutTree(node: OrgNode, x: number, y: number): LayoutNode {
 function layoutForest(roots: OrgNode[]): LayoutNode[] {
   if (roots.length === 0) return [];
 
-  const totalW = roots.reduce((sum, r) => sum + subtreeWidth(r), 0);
-  const gaps = (roots.length - 1) * GAP_X;
   let x = PADDING;
   const y = PADDING;
 
   const result: LayoutNode[] = [];
   for (const root of roots) {
-    const w = subtreeWidth(root);
-    result.push(layoutTree(root, x, y));
+    const w = subtreeWidth(root, 0);
+    result.push(layoutTree(root, x, y, 0));
     x += w + GAP_X;
   }
 
-  // Compute bounds and return
   return result;
 }
 

@@ -76,7 +76,7 @@ export function CliAuthPage() {
         <div className="rounded-lg border border-border bg-card p-6">
           <h1 className="text-xl font-semibold">CLI access approved</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            The Paperclip CLI can now finish authentication on the requesting machine.
+            CLI 인증이 승인되었습니다. 요청한 머신에서 인증을 완료할 수 있습니다.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
             Command: <span className="font-mono text-foreground">{challenge.command}</span>
@@ -120,9 +120,9 @@ export function CliAuthPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
-        <h1 className="text-xl font-semibold">Approve Paperclip CLI access</h1>
+        <h1 className="text-xl font-semibold">CLI 접근 승인</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          A local Paperclip CLI process is requesting board access to this instance.
+          로컬 CLI 프로세스가 이 인스턴스에 대한 보드 접근을 요청하고 있습니다.
         </p>
 
         <div className="mt-5 space-y-3 text-sm">

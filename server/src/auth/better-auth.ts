@@ -65,6 +65,13 @@ export function deriveAuthTrustedOrigins(config: Config): string[] {
   return Array.from(trustedOrigins);
 }
 
+function resolveAllowedEmails(): Set<string> {
+  const raw = process.env.PAPERCLIP_ALLOWED_EMAILS ?? "";
+  return new Set(
+    raw.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
+  );
+}
+
 export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins?: string[]): BetterAuthInstance {
   const baseUrl = config.authBaseUrlMode === "explicit" ? config.authPublicBaseUrl : undefined;
   const secret = process.env.BETTER_AUTH_SECRET ?? process.env.PAPERCLIP_AGENT_JWT_SECRET;
@@ -79,7 +86,11 @@ export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins?
   const publicUrl = process.env.PAPERCLIP_PUBLIC_URL ?? baseUrl;
   const isHttpOnly = publicUrl ? publicUrl.startsWith("http://") : false;
 
-  const authConfig = {
+  const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+  const allowedEmails = resolveAllowedEmails();
+
+  const authConfig: Parameters<typeof betterAuth>[0] = {
     baseURL: baseUrl,
     secret,
     trustedOrigins: effectiveTrustedOrigins,
@@ -97,6 +108,33 @@ export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins?
       requireEmailVerification: false,
       disableSignUp: config.authDisableSignUp,
     },
+    ...(googleClientId && googleClientSecret
+      ? {
+          socialProviders: {
+            google: {
+              clientId: googleClientId,
+              clientSecret: googleClientSecret,
+            },
+          },
+        }
+      : {}),
+    ...(allowedEmails.size > 0
+      ? {
+          databaseHooks: {
+            user: {
+              create: {
+                before: async (user: { email?: string | null; [key: string]: unknown }) => {
+                  const email = (user.email ?? "").toLowerCase();
+                  if (!allowedEmails.has(email)) {
+                    throw new Error(`Access denied: ${email} is not in the allowed list.`);
+                  }
+                  return { data: user as Parameters<typeof betterAuth>[0] extends { databaseHooks?: { user?: { create?: { before?: (u: infer U) => unknown } } } } ? U : never };
+                },
+              },
+            },
+          },
+        }
+      : {}),
     ...(isHttpOnly ? { advanced: { useSecureCookies: false } } : {}),
   };
 

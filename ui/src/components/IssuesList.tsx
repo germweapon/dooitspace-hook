@@ -72,7 +72,7 @@ const defaultViewState: IssueViewState = {
   sortField: "updated",
   sortDir: "desc",
   groupBy: "none",
-  viewMode: "list",
+  viewMode: "board",
   collapsedGroups: [],
   collapsedParents: [],
 };
@@ -547,18 +547,18 @@ export function IssuesList({
           {/* View mode toggle */}
           <div className="flex items-center border border-border rounded-md overflow-hidden mr-1">
             <button
-              className={`p-1.5 transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => updateView({ viewMode: "list" })}
-              title="List view"
-            >
-              <List className="h-3.5 w-3.5" />
-            </button>
-            <button
               className={`p-1.5 transition-colors ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "board" })}
               title="Board view"
             >
               <Columns3 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              className={`p-1.5 transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              onClick={() => updateView({ viewMode: "list" })}
+              title="List view"
+            >
+              <List className="h-3.5 w-3.5" />
             </button>
           </div>
 
