@@ -30,6 +30,12 @@ import {
   resolveHomeAwarePath,
 } from "./home-paths.js";
 
+// Clear empty API key env vars so .env values can take effect
+// (Claude Code app injects empty ANTHROPIC_API_KEY= which blocks dotenv override:false)
+for (const key of ["ANTHROPIC_API_KEY"]) {
+  if (process.env[key] === "") delete process.env[key];
+}
+
 const PAPERCLIP_ENV_FILE_PATH = resolveHOOKEnvPath();
 if (existsSync(PAPERCLIP_ENV_FILE_PATH)) {
   loadDotenv({ path: PAPERCLIP_ENV_FILE_PATH, override: false, quiet: true });

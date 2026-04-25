@@ -234,6 +234,21 @@ type HOOKWakeComment = {
   authorId: string | null;
 };
 
+type HOOKWakeExecutionPrincipal = {
+  type: string | null;
+  agentId: string | null;
+  userId: string | null;
+};
+
+type HOOKWakeExecutionStage = {
+  wakeRole: string | null;
+  stageType: string | null;
+  currentParticipant: HOOKWakeExecutionPrincipal | null;
+  returnAssignee: HOOKWakeExecutionPrincipal | null;
+  lastDecisionOutcome: string | null;
+  allowedActions: string[];
+};
+
 type HOOKWakePayload = {
   reason: string | null;
   issue: HOOKWakeIssue | null;
@@ -245,6 +260,7 @@ type HOOKWakePayload = {
   missingCount: number;
   truncated: boolean;
   fallbackFetchNeeded: boolean;
+  executionStage: HOOKWakeExecutionStage | null;
 };
 
 function normalizeHOOKWakeIssue(value: unknown): HOOKWakeIssue | null {
@@ -280,6 +296,35 @@ function normalizeHOOKWakeComment(value: unknown): HOOKWakeComment | null {
   };
 }
 
+function normalizeHOOKWakeExecutionPrincipal(value: unknown): HOOKWakeExecutionPrincipal | null {
+  const p = parseObject(value);
+  const type = asString(p.type, "").trim() || null;
+  if (!type) return null;
+  return {
+    type,
+    agentId: asString(p.agentId, "").trim() || null,
+    userId: asString(p.userId, "").trim() || null,
+  };
+}
+
+function normalizeHOOKWakeExecutionStage(value: unknown): HOOKWakeExecutionStage | null {
+  const s = parseObject(value);
+  const wakeRole = asString(s.wakeRole, "").trim() || null;
+  const stageType = asString(s.stageType, "").trim() || null;
+  if (!wakeRole && !stageType) return null;
+  const allowedActions = Array.isArray(s.allowedActions)
+    ? s.allowedActions.filter((a): a is string => typeof a === "string")
+    : [];
+  return {
+    wakeRole,
+    stageType,
+    currentParticipant: normalizeHOOKWakeExecutionPrincipal(s.currentParticipant),
+    returnAssignee: normalizeHOOKWakeExecutionPrincipal(s.returnAssignee),
+    lastDecisionOutcome: asString(s.lastDecisionOutcome, "").trim() || null,
+    allowedActions,
+  };
+}
+
 export function normalizeHOOKWakePayload(value: unknown): HOOKWakePayload | null {
   const payload = parseObject(value);
   const comments = Array.isArray(payload.comments)
@@ -310,6 +355,7 @@ export function normalizeHOOKWakePayload(value: unknown): HOOKWakePayload | null
     missingCount: asNumber(commentWindow.missingCount, 0),
     truncated: asBoolean(payload.truncated, false),
     fallbackFetchNeeded: asBoolean(payload.fallbackFetchNeeded, false),
+    executionStage: normalizeHOOKWakeExecutionStage(payload.executionStage),
   };
 }
 

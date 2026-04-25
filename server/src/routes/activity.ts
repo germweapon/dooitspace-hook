@@ -4,7 +4,7 @@ import type { Db } from "@paperclipai/db";
 import { validate } from "../middleware/validate.js";
 import { activityService } from "../services/activity.js";
 import { assertBoard, assertCompanyAccess } from "./authz.js";
-import { heartbeatService, issueService } from "../services/index.js";
+import { heartbeatService, issueService, publishLiveEvent } from "../services/index.js";
 import { sanitizeRecord } from "../redaction.js";
 
 const createActivitySchema = z.object({
@@ -52,6 +52,18 @@ export function activityRoutes(db: Db) {
       companyId,
       ...req.body,
       details: req.body.details ? sanitizeRecord(req.body.details) : null,
+    });
+    publishLiveEvent({
+      companyId,
+      type: "activity.logged",
+      payload: {
+        actorType: req.body.actorType,
+        actorId: req.body.actorId,
+        action: req.body.action,
+        entityType: req.body.entityType,
+        entityId: req.body.entityId,
+        details: req.body.details ?? null,
+      },
     });
     res.status(201).json(event);
   });
