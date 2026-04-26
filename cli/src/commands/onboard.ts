@@ -1,3 +1,10 @@
+if (!process.env.ALLOW_DIRECT_ANTHROPIC_API) {
+  throw new Error(
+    "Direct Anthropic API calls require ALLOW_DIRECT_ANTHROPIC_API=1 env var. " +
+    "This prevents unintended API cost. Set explicitly to allow."
+  );
+}
+
 import * as p from "@clack/prompts";
 import path from "node:path";
 import pc from "picocolors";
