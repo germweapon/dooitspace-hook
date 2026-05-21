@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm --filter @dooitspace/hook-ui build",
+  "outputDirectory": "ui/dist",
+  "installCommand": "pnpm install"
+}
